@@ -1,10 +1,10 @@
 {
-  "name": "manejodeapi",
+  "name": "primerapreentrega",
   "version": "1.0.0",
-  "description": "api-listado",
+  "description": "api-productos",
   "license": "ISC",
-  "author": "space max",
-  "type": "commonjs",
+  "author": "Maximiliano Aguero",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
