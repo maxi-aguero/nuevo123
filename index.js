@@ -1,6 +1,6 @@
 const [, , accion, resto, desc, precio, category] = process.argv;
 
-async function ListarProductos() {
+async function listarProductos() {
  try{
     const response = await fetch(
         "https://fakestoreapi.com/products"
@@ -18,7 +18,7 @@ finally {console.log("Fin."); }
 }
 
 
-async function traerunproducto(miid) {
+async function traerUnProducto(miid) {
  try{
     const response = await fetch(
         `https://fakestoreapi.com/products/${miid}`
@@ -37,7 +37,7 @@ finally { console.log("Fin."); }
 
 async function obtenerProducto(data,unproducto,identrada) {
 try{
-    const dataproducto = await traerunproducto(identrada);
+    const dataproducto = await traerUnProducto(identrada);
     console.log(dataproducto);//lo mustro con formato json
 
     const { title, price,category } = dataproducto; 
@@ -52,7 +52,7 @@ finally { console.log("Fin."); }
 }
 
 
-function mostrartodoslosproductos(data) {
+function mostrarTodosLosProductos(data) {
 
     console.log(data);
 
@@ -83,14 +83,14 @@ async function eliminarProducto(unproducto,identrada) {
             }
         );
 
-        const productoeliminado = await response.json();
+        const productoEliminado = await response.json();
 
         console.log("Producto eliminado:");
-        console.log(productoeliminado);
+        console.log(productoEliminado);
         
-        console.log(`Producto: ${productoeliminado.title}`);
-        console.log(`Precio: ${productoeliminado.price}`);
-        console.log(`Categoria: ${productoeliminado.category}`);
+        console.log(`Producto: ${productoEliminado.title}`);
+        console.log(`Precio: ${productoEliminado.price}`);
+        console.log(`Categoria: ${productoEliminado.category}`);
        
 
 }
@@ -155,60 +155,73 @@ async function agregarProducto(desc,precio,cat) {
 }
 
 
+function validarId(identrada) {     
+
+    const id = Number(identrada);
+    if (isNaN(id) || identrada.trim() === "" || !Number.isInteger(id) || id <= 0) {
+        throw new Error("El id debe ser un número entero positivo.");
+    }
+
+}
+
+function validarPost(desc, precio, category) {
+       
+    if (!desc || desc.trim() === "") {
+        throw new Error("Falta la descripción del producto.");
+    }
+     if (!category || category.trim() === "") {
+        throw new Error("Falta la categoria del producto.");
+    }
+    if (isNaN(precio) || Number(precio) <= 0) {
+        throw new Error("El precio debe ser un número mayor a cero.");
+    }
+}
+
 async function main() {
-
     try {
+        const data = await listarProductos();
 
-        const data = await ListarProductos();
+
         const [unproducto, identrada] = resto.split("/");
 
+
+        if (unproducto !== 'products') {
+            throw new Error("Error. Debe ser 'products'.");
+        }
+
         switch (accion) {
-
             case "GET":
-
-                if (identrada == undefined) {
-                        mostrartodoslosproductos(data);
-                }
-                else
-                {      await obtenerProducto(data,unproducto,identrada);
-
+                
+                if (identrada === undefined) {
+                    mostrarTodosLosProductos(data);
+                } else
+                {      
+                    validarId(identrada);
+                    await obtenerProducto(data, unproducto, identrada);
                 }
                 break;
 
             case "POST":
-            
-                mostrartodoslosproductos(data);       
-                await agregarProducto(desc,precio,category);
-
+                validarPost(desc, precio, category);
+                
+                mostrarTodosLosProductos(data);       
+                await agregarProducto(desc, precio, category);
                 break;
 
             case "DELETE":
-
-                mostrartodoslosproductos(data);   
-                await eliminarProducto(unproducto,identrada);
-
+                validarId(identrada);                
+                mostrarTodosLosProductos(data);   
+                await eliminarProducto(unproducto, identrada);
                 break;
 
             default:
-
-                console.log("Caso por defecto");
-
+                console.log("Acción inválida");
         }
 
-    }
-
-    catch (error) {
-
-        console.log(error);
-
-    }
-
-    finally {
-
-        console.log("Fin.");
-
-    }
-
+    } catch (error) {console.log("Error:", error.message);} 
+    
+    finally {console.log("Fin.");  }
 }
+
 
 main();
